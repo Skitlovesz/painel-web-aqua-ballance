@@ -1,9 +1,9 @@
 import React from 'react';
 import { Trash2, Droplets } from 'lucide-react';
-import { User } from '../types';
+import { FirebaseUser } from '../hooks/useFirebaseUsers';
 
 interface UserTableProps {
-  users: User[];
+  users: FirebaseUser[];
   onDeleteUser: (id: string) => void;
 }
 
@@ -19,7 +19,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onDeleteUser }) => {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               <div className="flex items-center">
                 <Droplets size={14} className="mr-1 text-blue-500" />
-                Meta de Água
+                Email
               </div>
             </th>
             <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -34,16 +34,15 @@ const UserTable: React.FC<UserTableProps> = ({ users, onDeleteUser }) => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium">
-                      {user.name.charAt(0)}
+                      {user.nome.charAt(0)}
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="text-sm font-medium text-gray-900">{`${user.nome} ${user.sobrenome}`}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {user.waterGoal}ml
+                  {user.email}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button

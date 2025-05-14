@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Header: React.FC = () => {
@@ -12,11 +12,7 @@ const Header: React.FC = () => {
           <h1 className="text-2xl font-semibold text-gray-800">Painel Administrativo</h1>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <button className="p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none">
-            <Bell size={20} />
-          </button>
-          
+        <div className="flex items-center">
           <div className="flex items-center">
             <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
               <User size={16} />
@@ -31,4 +27,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header
+export default Header;

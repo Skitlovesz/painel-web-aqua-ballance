@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import UserTable from '../components/UserTable';
-import { useMockData } from '../hooks/useMockData';
+import { useFirebaseUsers } from '../hooks/useFirebaseUsers';
 
 const UsersList: React.FC = () => {
-  const { users } = useMockData();
+  const { users, deleteUser } = useFirebaseUsers();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredUsers = users.filter(user => {
+    const searchLower = searchTerm.toLowerCase();
     return searchTerm === '' || 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      user.nome.toLowerCase().includes(searchLower) ||
+      user.sobrenome.toLowerCase().includes(searchLower) ||
+      user.email.toLowerCase().includes(searchLower);
   });
 
-  const handleDeleteUser = (id: string) => {
-    // Aqui você implementaria a lógica de deleção
-    console.log('Deletar usuário:', id);
+  const handleDeleteUser = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
+      try {
+        await deleteUser(id);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Erro ao excluir usuário');
+      }
+    }
   };
 
   return (
