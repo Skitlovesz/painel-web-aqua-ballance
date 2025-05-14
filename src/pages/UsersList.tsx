@@ -10,9 +10,9 @@ const UsersList: React.FC = () => {
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase();
     return searchTerm === '' || 
-      user.nome.toLowerCase().includes(searchLower) ||
-      user.sobrenome.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower);
+      (user.nome?.toLowerCase() || '').includes(searchLower) ||
+      (user.sobrenome?.toLowerCase() || '').includes(searchLower) ||
+      (user.email?.toLowerCase() || '').includes(searchLower);
   });
 
   const handleDeleteUser = async (id: string) => {
