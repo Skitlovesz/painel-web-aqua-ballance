@@ -1,8 +1,8 @@
 import React from 'react';
-import { User as UserType } from '../types';
+import { FirebaseUser } from '../hooks/useFirebaseUsers';
 
 interface RecentUsersProps {
-  users: UserType[];
+  users: FirebaseUser[];
 }
 
 const RecentUsers: React.FC<RecentUsersProps> = ({ users }) => {
@@ -14,11 +14,13 @@ const RecentUsers: React.FC<RecentUsersProps> = ({ users }) => {
           className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium flex-shrink-0">
-            {user.name.charAt(0)}
+            {user.nome?.charAt(0) || '?'}
           </div>
           
           <div className="ml-3 flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
+            <p className="text-sm font-medium text-gray-800 truncate">
+              {`${user.nome || ''} ${user.sobrenome || ''}`}
+            </p>
             <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
         </div>

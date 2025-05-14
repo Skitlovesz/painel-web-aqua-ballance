@@ -3,19 +3,16 @@ import { Users, Droplets } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import StatCard from '../components/StatCard';
 import RecentUsers from '../components/RecentUsers';
-import { useMockData } from '../hooks/useMockData';
+import { useFirebaseUsers } from '../hooks/useFirebaseUsers';
 
 const Dashboard: React.FC = () => {
-  const { users } = useMockData();
+  const { users } = useFirebaseUsers();
 
   const stats = [
     {
       title: 'Total de Usuários',
       value: users.length,
-      icon: <Users className="text-blue-500" />,
-      change: '+12%',
-      timeFrame: 'desde o mês passado',
-      positive: true,
+      icon: <Users className="text-blue-500" />
     }
   ];
 
