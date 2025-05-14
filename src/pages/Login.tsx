@@ -75,7 +75,7 @@ const Login: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="Usuário"
               />
             </div>
           </div>
@@ -94,7 +94,7 @@ const Login: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="admin"
+                placeholder="Senha"
               />
             </div>
           </div>
@@ -108,10 +108,6 @@ const Login: React.FC = () => {
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <p>Credenciais de demonstração: admin / admin</p>
-        </div>
       </div>
     </div>
   );
