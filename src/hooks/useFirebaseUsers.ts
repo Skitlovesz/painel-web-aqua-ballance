@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { getAuth, deleteUser } from 'firebase/auth';
+import { collection, query, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { db } from '../firebase';
 
 export interface FirebaseUser {
@@ -41,24 +41,29 @@ export function useFirebaseUsers() {
 
   const deleteUser = async (id: string) => {
     try {
-      const userDoc = await doc(db, 'users', id);
-      const userSnapshot = await db.collection('users').doc(id).get();
-      const userData = userSnapshot.data();
+      // Get reference to the user document
+      const userDocRef = doc(db, 'users', id);
       
-      if (userData?.uid) {
-        // Delete the user authentication
-        const userAuth = await auth.getUser(userData.uid);
-        if (userAuth) {
-          await auth.deleteUser(userData.uid);
-        }
+      // Get the user data
+      const userSnapshot = await getDoc(userDocRef);
+      const userData = userSnapshot.data();
+
+      if (!userSnapshot.exists()) {
+        throw new Error('User not found');
       }
 
       // Delete user data from Firestore
-      await deleteDoc(userDoc);
+      await deleteDoc(userDocRef);
+
+      // Note: In a production environment, you would need to:
+      // 1. Re-authenticate the user before deletion
+      // 2. Handle the deletion of the Firebase Auth user through a secure backend
+      // 3. Implement proper error handling for various edge cases
+
       return true;
     } catch (err) {
       console.error('Error deleting user:', err);
-      throw new Error('Failed to delete user');
+      throw err; // Propagate the error to be handled by the UI
     }
   };
 

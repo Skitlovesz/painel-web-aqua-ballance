@@ -21,7 +21,7 @@ const UsersList: React.FC = () => {
         await deleteUser(id);
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Erro ao excluir usuário');
+        alert(`Erro ao excluir usuário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       }
     }
   };
