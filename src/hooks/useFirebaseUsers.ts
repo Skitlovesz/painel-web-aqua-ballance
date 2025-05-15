@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { deleteUser as deleteAuthUser } from 'firebase/auth';
-import { db, auth } from '../firebase';
+import { collection, query, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export interface FirebaseUser {
   id: string;
@@ -38,30 +37,24 @@ export function useFirebaseUsers() {
     return () => unsubscribe();
   }, []);
 
-  const deleteUser = async (id: string) => {
+  const deleteUser = async (id: string, uid?: string) => {
     try {
-      // Primeiro, encontramos o usuário no Firestore
-      const userDoc = await doc(db, 'users', id);
-      const userSnapshot = await userDoc.get();
-      
-      if (!userSnapshot.exists) {
-        throw new Error('Usuário não encontrado');
+      // Busca o usuário na lista local para garantir o UID
+      const localUser = users.find(u => u.id === id);
+      const userUid = uid || localUser?.uid;
+
+      if (!userUid) {
+        throw new Error('UID do usuário não encontrado.');
       }
 
-      const userData = userSnapshot.data();
-      const uid = userData?.uid;
+      // Chama a API de administração para excluir do Firestore e Auth
+      const response = await fetch(`http://localhost:3000/delete-user/${userUid}`, {
+        method: 'DELETE',
+      });
 
-      if (!uid) {
-        throw new Error('UID do usuário não encontrado');
-      }
-
-      // Deletamos o documento do Firestore
-      await deleteDoc(doc(db, 'users', id));
-
-      // Deletamos o usuário da autenticação
-      const currentUser = auth.currentUser;
-      if (currentUser && currentUser.uid === uid) {
-        await deleteAuthUser(currentUser);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erro ao excluir usuário no backend');
       }
 
       return true;
