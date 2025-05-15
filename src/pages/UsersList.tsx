@@ -18,7 +18,11 @@ const UsersList: React.FC = () => {
   const handleDeleteUser = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
       try {
-        await deleteUser(id);
+        const user = users.find(u => u.id === id);
+        if (!user?.uid) {
+          throw new Error('UID do usuário não encontrado');
+        }
+        await deleteUser(id, user.uid);
       } catch (error) {
         console.error('Error deleting user:', error);
         alert(`Erro ao excluir usuário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
-import { getAuth, deleteUser } from 'firebase/auth';
+import { collection, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 
 export interface FirebaseUser {
@@ -8,7 +7,7 @@ export interface FirebaseUser {
   nome: string;
   sobrenome: string;
   email: string;
-  uid?: string;
+  uid: string;
 }
 
 export function useFirebaseUsers() {
@@ -23,7 +22,7 @@ export function useFirebaseUsers() {
       (querySnapshot) => {
         const usersData = querySnapshot.docs.map(doc => ({
           id: doc.id,
-          uid: doc.data().uid, // Explicitly include uid in the mapped data
+          uid: doc.data().uid,
           ...doc.data()
         })) as FirebaseUser[];
         setUsers(usersData);
@@ -39,38 +38,14 @@ export function useFirebaseUsers() {
     return () => unsubscribe();
   }, []);
 
-  const deleteUser = async (id: string) => {
+  const deleteUser = async (id: string, uid: string) => {
     try {
-      // Get reference to the user document
-      const userDocRef = doc(db, 'users', id);
+      // Delete from Firestore first
+      await deleteDoc(doc(db, 'users', id));
       
-      // Get the user data
-      const userSnapshot = await getDoc(userDocRef);
+      // Then delete the authentication account
+      await auth.deleteUser(uid);
       
-      if (!userSnapshot.exists()) {
-        throw new Error('Usuário não encontrado');
-      }
-
-      const userData = userSnapshot.data();
-      
-      if (!userData.uid) {
-        throw new Error('UID do usuário não encontrado');
-      }
-
-      try {
-        // Primeiro, deletamos os dados do Firestore
-        await deleteDoc(userDocRef);
-        
-        // Depois, tentamos deletar a conta de autenticação
-        const authUser = await auth.getUser(userData.uid);
-        if (authUser) {
-          await auth.deleteUser(userData.uid);
-        }
-      } catch (authError) {
-        console.error('Erro ao deletar conta de autenticação:', authError);
-        throw new Error('Não foi possível deletar completamente o usuário. Por favor, contate o suporte.');
-      }
-
       return true;
     } catch (err) {
       console.error('Error deleting user:', err);
