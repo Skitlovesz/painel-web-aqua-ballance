@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { db } from '../firebase';
+import { getAuth, deleteUser } from 'firebase/auth';
+import { db, auth } from '../firebase';
 
 export interface FirebaseUser {
   id: string;
@@ -15,7 +15,6 @@ export function useFirebaseUsers() {
   const [users, setUsers] = useState<FirebaseUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const auth = getAuth();
 
   useEffect(() => {
     const q = query(collection(db, 'users'));
@@ -46,24 +45,35 @@ export function useFirebaseUsers() {
       
       // Get the user data
       const userSnapshot = await getDoc(userDocRef);
-      const userData = userSnapshot.data();
-
+      
       if (!userSnapshot.exists()) {
-        throw new Error('User not found');
+        throw new Error('Usuário não encontrado');
       }
 
-      // Delete user data from Firestore
-      await deleteDoc(userDocRef);
+      const userData = userSnapshot.data();
+      
+      if (!userData.uid) {
+        throw new Error('UID do usuário não encontrado');
+      }
 
-      // Note: In a production environment, you would need to:
-      // 1. Re-authenticate the user before deletion
-      // 2. Handle the deletion of the Firebase Auth user through a secure backend
-      // 3. Implement proper error handling for various edge cases
+      try {
+        // Primeiro, deletamos os dados do Firestore
+        await deleteDoc(userDocRef);
+        
+        // Depois, tentamos deletar a conta de autenticação
+        const authUser = await auth.getUser(userData.uid);
+        if (authUser) {
+          await auth.deleteUser(userData.uid);
+        }
+      } catch (authError) {
+        console.error('Erro ao deletar conta de autenticação:', authError);
+        throw new Error('Não foi possível deletar completamente o usuário. Por favor, contate o suporte.');
+      }
 
       return true;
     } catch (err) {
       console.error('Error deleting user:', err);
-      throw err; // Propagate the error to be handled by the UI
+      throw err;
     }
   };
 
