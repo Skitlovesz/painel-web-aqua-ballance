@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { deleteUser } from 'firebase/auth';
 import { db, auth } from '../firebase';
 
 export interface FirebaseUser {
@@ -40,12 +41,22 @@ export function useFirebaseUsers() {
 
   const deleteUser = async (id: string, uid: string) => {
     try {
-      // Delete from Firestore first
+      // Primeiro deletamos do Firestore
       await deleteDoc(doc(db, 'users', id));
       
-      // Then delete the authentication account
-      await auth.deleteUser(uid);
-      
+      // Depois tentamos deletar da autenticação usando uma função do Cloud Functions
+      const response = await fetch(`https://us-central1-aquaballance-1b2ae.cloudfunctions.net/deleteUser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uid })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao deletar usuário da autenticação');
+      }
+
       return true;
     } catch (err) {
       console.error('Error deleting user:', err);
