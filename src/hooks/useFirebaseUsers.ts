@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { deleteUser } from 'firebase/auth';
+import { deleteUser as deleteAuthUser } from 'firebase/auth';
 import { db, auth } from '../firebase';
 
 export interface FirebaseUser {
@@ -23,7 +23,6 @@ export function useFirebaseUsers() {
       (querySnapshot) => {
         const usersData = querySnapshot.docs.map(doc => ({
           id: doc.id,
-          uid: doc.data().uid,
           ...doc.data()
         })) as FirebaseUser[];
         setUsers(usersData);
@@ -39,28 +38,40 @@ export function useFirebaseUsers() {
     return () => unsubscribe();
   }, []);
 
-  const deleteUser = async (id: string, uid: string) => {
+  const deleteUser = async (id: string) => {
     try {
-      // Primeiro deletamos do Firestore
-      await deleteDoc(doc(db, 'users', id));
+      // Primeiro, encontramos o usuário no Firestore
+      const userDoc = await doc(db, 'users', id);
+      const userSnapshot = await userDoc.get();
       
-      // Depois tentamos deletar da autenticação usando uma função do Cloud Functions
-      const response = await fetch(`https://us-central1-aquaballance-1b2ae.cloudfunctions.net/deleteUser`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ uid })
-      });
+      if (!userSnapshot.exists) {
+        throw new Error('Usuário não encontrado');
+      }
 
-      if (!response.ok) {
-        throw new Error('Falha ao deletar usuário da autenticação');
+      const userData = userSnapshot.data();
+      const uid = userData?.uid;
+
+      if (!uid) {
+        throw new Error('UID do usuário não encontrado');
+      }
+
+      // Deletamos o documento do Firestore
+      await deleteDoc(doc(db, 'users', id));
+
+      // Deletamos o usuário da autenticação
+      const currentUser = auth.currentUser;
+      if (currentUser && currentUser.uid === uid) {
+        await deleteAuthUser(currentUser);
       }
 
       return true;
     } catch (err) {
       console.error('Error deleting user:', err);
-      throw err;
+      if (err instanceof Error) {
+        throw new Error(`Erro ao excluir usuário: ${err.message}`);
+      } else {
+        throw new Error('Erro ao excluir usuário');
+      }
     }
   };
 
