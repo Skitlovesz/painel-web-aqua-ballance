@@ -23,6 +23,7 @@ export function useFirebaseUsers() {
       (querySnapshot) => {
         const usersData = querySnapshot.docs.map(doc => ({
           id: doc.id,
+          uid: doc.data().uid, // Explicitly include uid in the mapped data
           ...doc.data()
         })) as FirebaseUser[];
         setUsers(usersData);
