@@ -17,8 +17,8 @@ export function useFirebaseUsers() {
 
   useEffect(() => {
     const q = query(collection(db, 'users'));
-    
-    const unsubscribe = onSnapshot(q, 
+
+    const unsubscribe = onSnapshot(q,
       (querySnapshot) => {
         const usersData = querySnapshot.docs.map(doc => ({
           id: doc.id,
@@ -37,34 +37,28 @@ export function useFirebaseUsers() {
     return () => unsubscribe();
   }, []);
 
-  const deleteUser = async (id: string, uid?: string) => {
+  const deleteUser = async (userUid: string) => {
+    const functionUrl = `https://aquaballance-api.vercel.app/api/users/delete/${userUid}`;
+
     try {
-      // Busca o usuário na lista local para garantir o UID
-      const localUser = users.find(u => u.id === id);
-      const userUid = uid || localUser?.uid;
-
-      if (!userUid) {
-        throw new Error('UID do usuário não encontrado.');
-      }
-
-      // Chama a API de administração para excluir do Firestore e Auth
-      const response = await fetch(`http://localhost:3000/delete-user/${userUid}`, {
-        method: 'DELETE',
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ adminUid: 's3ZY9zHPBSfCZXpKRI7T' })
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro ao excluir usuário no backend');
+        console.log(response);
+        throw new Error(`Erro: ${response.statusText}`);
       }
 
-      return true;
-    } catch (err) {
-      console.error('Error deleting user:', err);
-      if (err instanceof Error) {
-        throw new Error(`Erro ao excluir usuário: ${err.message}`);
-      } else {
-        throw new Error('Erro ao excluir usuário');
-      }
+      const data = await response.json();
+      return data;
+      console.log(data.message);
+    } catch (error: any) {
+      console.error('Erro ao deletar o usuário:', error.message);
     }
   };
 
