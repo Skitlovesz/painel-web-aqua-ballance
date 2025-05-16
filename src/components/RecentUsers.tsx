@@ -1,4 +1,5 @@
 import React from 'react';
+import { User } from 'lucide-react';
 import { FirebaseUser } from '../hooks/useFirebaseUsers';
 
 interface RecentUsersProps {
@@ -14,7 +15,7 @@ const RecentUsers: React.FC<RecentUsersProps> = ({ users }) => {
           className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium flex-shrink-0">
-            {user.nome?.charAt(0).toUpperCase() || '?'}
+            {user.nome?.charAt(0).toUpperCase() || <User size={20} />}
           </div>
           
           <div className="ml-3 flex-1 min-w-0">
